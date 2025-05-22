@@ -1,43 +1,41 @@
 const express = require("express");
 const cors = require("cors");
-
 const app = express();
 
-// Enable CORS
+// Middleware
 app.use(cors());
 
-// Root endpoint
+// Root
 app.get("/", (req, res) => {
-  res.send("Timestamp Microservice");
+  res.send("Timestamp Microservice is running");
 });
 
-// Endpoint /api/:date?
+// Timestamp API
 app.get("/api/:date?", (req, res) => {
-  const dateParam = req.params.date;
+  const { date } = req.params;
 
-  let date;
+  let parsedDate;
 
-  // Jika tidak ada parameter (kosong), gunakan tanggal sekarang
-  if (!dateParam) {
-    date = new Date();
+  // Jika parameter kosong, pakai waktu sekarang
+  if (!date) {
+    parsedDate = new Date();
+  } else if (!isNaN(date)) {
+    // Jika input angka (unix timestamp dalam ms atau detik)
+    parsedDate = new Date(parseInt(date));
   } else {
-    // Jika param hanya angka (unix timestamp)
-    if (!isNaN(dateParam) && /^\d+$/.test(dateParam)) {
-      date = new Date(parseInt(dateParam));
-    } else {
-      date = new Date(dateParam);
-    }
+    // Jika input string format date
+    parsedDate = new Date(date);
   }
 
-  // Validasi apakah date valid
-  if (date.toString() === "Invalid Date") {
+  // Cek validitas
+  if (parsedDate.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
-  // Jika valid, kembalikan format yang diminta
+  // Return JSON valid
   res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString(),
+    unix: parsedDate.getTime(),
+    utc: parsedDate.toUTCString(),
   });
 });
 
