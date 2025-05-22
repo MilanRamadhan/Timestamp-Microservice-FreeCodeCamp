@@ -3,7 +3,7 @@ const cors = require("cors");
 
 const app = express();
 
-// Enable CORS untuk FreeCodeCamp test
+// Enable CORS
 app.use(cors());
 
 // Root endpoint
@@ -11,30 +11,33 @@ app.get("/", (req, res) => {
   res.send("Timestamp Microservice");
 });
 
-// Timestamp endpoint
+// Endpoint /api/:date?
 app.get("/api/:date?", (req, res) => {
-  let { date } = req.params;
-  let parsedDate;
+  const dateParam = req.params.date;
 
-  if (!date) {
-    parsedDate = new Date();
+  let date;
+
+  // Jika tidak ada parameter (kosong), gunakan tanggal sekarang
+  if (!dateParam) {
+    date = new Date();
   } else {
-    // Deteksi jika date adalah Unix timestamp (angka murni)
-    if (!isNaN(date) && /^\d+$/.test(date)) {
-      parsedDate = new Date(parseInt(date));
+    // Jika param hanya angka (unix timestamp)
+    if (!isNaN(dateParam) && /^\d+$/.test(dateParam)) {
+      date = new Date(parseInt(dateParam));
     } else {
-      parsedDate = new Date(date);
+      date = new Date(dateParam);
     }
   }
 
-  // Cek validitas
-  if (parsedDate.toString() === "Invalid Date") {
+  // Validasi apakah date valid
+  if (date.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
+  // Jika valid, kembalikan format yang diminta
   res.json({
-    unix: parsedDate.getTime(),
-    utc: parsedDate.toUTCString(),
+    unix: date.getTime(),
+    utc: date.toUTCString(),
   });
 });
 
