@@ -1,14 +1,14 @@
-// api/index.js
-
 const express = require("express");
-const app = express();
 const cors = require("cors");
+const path = require("path");
+
+const app = express();
 
 app.use(cors({ optionsSuccessStatus: 200 }));
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "../public")));
 
 app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/../views/index.html");
+  res.sendFile(path.join(__dirname, "../views/index.html"));
 });
 
 app.get("/api/hello", function (req, res) {
@@ -42,5 +42,4 @@ app.get("/api/:date?", function (req, res) {
   });
 });
 
-// Export app agar bisa digunakan oleh Vercel
 module.exports = app;
