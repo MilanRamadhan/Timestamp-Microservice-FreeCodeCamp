@@ -1,45 +1,45 @@
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 
-app.use(cors({ optionsSuccessStatus: 200 }));
-app.use(express.static(path.join(__dirname, "../public")));
+// Enable CORS untuk FreeCodeCamp test
+app.use(cors());
 
-app.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname, "../views/index.html"));
+// Root endpoint
+app.get("/", (req, res) => {
+  res.send("Timestamp Microservice");
 });
 
-app.get("/api/hello", function (req, res) {
-  res.json({ greeting: "hello API" });
-});
+// Timestamp endpoint
+app.get("/api/:date?", (req, res) => {
+  let { date } = req.params;
+  let parsedDate;
 
-app.get("/api/:date?", function (req, res) {
-  let dateInput = req.params.date;
-
-  if (!dateInput) {
-    const now = new Date();
-    return res.json({
-      unix: now.getTime(),
-      utc: now.toUTCString(),
-    });
+  if (!date) {
+    parsedDate = new Date();
+  } else {
+    // Deteksi jika date adalah Unix timestamp (angka murni)
+    if (!isNaN(date) && /^\d+$/.test(date)) {
+      parsedDate = new Date(parseInt(date));
+    } else {
+      parsedDate = new Date(date);
+    }
   }
 
-  if (!isNaN(dateInput) && /^\d+$/.test(dateInput)) {
-    dateInput = parseInt(dateInput);
-  }
-
-  const date = new Date(dateInput);
-
-  if (date.toString() === "Invalid Date") {
+  // Cek validitas
+  if (parsedDate.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
-  return res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString(),
+  res.json({
+    unix: parsedDate.getTime(),
+    utc: parsedDate.toUTCString(),
   });
 });
 
-module.exports = app;
+// Jalankan server
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Server berjalan di http://localhost:${port}`);
+});
