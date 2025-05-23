@@ -4,15 +4,8 @@ const app = express();
 // Middleware untuk file statis (jika ada halaman HTML/CSS)
 app.use(express.static("public"));
 
-// Jalankan server
-const port = process.env.PORT || 3000;
-
 app.get("/", (req, res) => {
-  res.send("Timestamp Microservice is running");
-});
-
-app.listen(port, () => {
-  console.log(`Server berjalan di port ${port}`);
+  res.sendFile(__dirname + "/views/index.html");
 });
 
 app.get("/api/:date?", (req, res) => {
@@ -39,4 +32,10 @@ app.get("/api/:date?", (req, res) => {
     unix: date.getTime(),
     utc: date.toUTCString(),
   });
+});
+
+// Jalankan server
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server berjalan di port ${port}`);
 });
