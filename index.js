@@ -1,38 +1,37 @@
 const express = require("express");
-const cors = require("cors");
 const app = express();
 
-// Middleware
-app.use(cors());
+// Aktifkan folder public untuk menyajikan file statis seperti HTML, CSS, JS
+app.use(express.static("public"));
 
-// Root
+// Endpoint utama akan menampilkan index.html
 app.get("/", (req, res) => {
-  res.send("Timestamp Microservice is running");
+  res.sendFile(__dirname + "/views/index.html");
 });
 
-// Timestamp API
+// API endpoint
 app.get("/api/:date?", (req, res) => {
-  const { date } = req.params;
+  let date = req.params.date;
 
-  let parsedDate;
-
-  // Jika parameter kosong, pakai waktu sekarang
   if (!date) {
-    parsedDate = new Date();
-  } else if (!isNaN(date)) {
-    // Jika input angka (unix timestamp dalam ms atau detik)
-    parsedDate = new Date(parseInt(date));
-  } else {
-    // Jika input string format date
-    parsedDate = new Date(date);
+    const now = new Date();
+    return res.json({
+      unix: now.getTime(),
+      utc: now.toUTCString(),
+    });
   }
 
-  // Cek validitas
+  // Cek apakah input berupa angka (timestamp unix)
+  if (!isNaN(date)) {
+    date = parseInt(date);
+  }
+
+  const parsedDate = new Date(date);
+
   if (parsedDate.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
-  // Return JSON valid
   res.json({
     unix: parsedDate.getTime(),
     utc: parsedDate.toUTCString(),
@@ -40,7 +39,7 @@ app.get("/api/:date?", (req, res) => {
 });
 
 // Jalankan server
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Server berjalan di http://localhost:${port}`);
+  console.log(`Server berjalan di port ${port}`);
 });
