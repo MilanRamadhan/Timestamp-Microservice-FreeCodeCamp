@@ -8,29 +8,38 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
+// Rute untuk /api dan /api/:date
 app.get("/api/:date?", (req, res) => {
   let dateParam = req.params.date;
 
-  // Jika tidak ada parameter, gunakan waktu sekarang
+  // Jika parameter kosong, gunakan waktu saat ini
   if (!dateParam) {
     const now = new Date();
     return res.json({
-      unix: now.getTime(),
-      utc: now.toUTCString(),
+      unix: now.getTime(), // Pastikan Number
+      utc: now.toUTCString(), // Format: "Fri, 23 May 2025 19:58:00 GMT"
     });
   }
 
-  // Deteksi apakah dateParam adalah UNIX timestamp
-  // (semua angka berarti kemungkinan besar timestamp)
-  let date = /^\d+$/.test(dateParam) ? new Date(parseInt(dateParam)) : new Date(dateParam);
+  // Coba konversi dateParam ke tanggal
+  let date;
+  // Jika dateParam hanya angka (UNIX timestamp)
+  if (/^\d+$/.test(dateParam)) {
+    date = new Date(parseInt(dateParam));
+  } else {
+    // Jika string tanggal, coba parse langsung
+    date = new Date(dateParam);
+  }
 
-  if (date.toString() === "Invalid Date") {
+  // Cek apakah tanggal valid
+  if (isNaN(date.getTime())) {
     return res.json({ error: "Invalid Date" });
   }
 
+  // Kembalikan hasil dalam format yang diminta
   return res.json({
-    unix: date.getTime(),
-    utc: date.toUTCString(),
+    unix: date.getTime(), // Pastikan Number
+    utc: date.toUTCString(), // Format: "Fri, 25 Dec 2015 00:00:00 GMT"
   });
 });
 
