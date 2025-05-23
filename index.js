@@ -1,19 +1,18 @@
 const express = require("express");
 const app = express();
 
-// Aktifkan folder public untuk menyajikan file statis seperti HTML, CSS, JS
+// Middleware untuk file statis (jika ada halaman HTML/CSS)
 app.use(express.static("public"));
 
-// Endpoint utama akan menampilkan index.html
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-// API endpoint
 app.get("/api/:date?", (req, res) => {
-  let date = req.params.date;
+  let dateParam = req.params.date;
 
-  if (!date) {
+  // Jika tidak ada parameter, gunakan waktu sekarang
+  if (!dateParam) {
     const now = new Date();
     return res.json({
       unix: now.getTime(),
@@ -21,20 +20,17 @@ app.get("/api/:date?", (req, res) => {
     });
   }
 
-  // Cek apakah input berupa angka (timestamp unix)
-  if (!isNaN(date)) {
-    date = parseInt(date);
-  }
+  // Deteksi apakah dateParam adalah UNIX timestamp
+  // (semua angka berarti kemungkinan besar timestamp)
+  let date = /^\d+$/.test(dateParam) ? new Date(parseInt(dateParam)) : new Date(dateParam);
 
-  const parsedDate = new Date(date);
-
-  if (parsedDate.toString() === "Invalid Date") {
+  if (date.toString() === "Invalid Date") {
     return res.json({ error: "Invalid Date" });
   }
 
-  res.json({
-    unix: parsedDate.getTime(),
-    utc: parsedDate.toUTCString(),
+  return res.json({
+    unix: date.getTime(),
+    utc: date.toUTCString(),
   });
 });
 
